@@ -112,15 +112,7 @@
     
     return keyArray;
 }
--(NSString *)signing :(NSString *)strTosign publicKey:(NSString *)publicKey{
-    
-    
-    NSString *signature=[RSACryptor encrypt:strTosign key:publicKey error:error];
-    NSString *recoveredText =[RSACryptor decrypt:signature key:RSAKeyPair.privateKey error:error];
-    
-    BDDebugLog(@"Recovered Text:\n%@", recoveredText);
-    return  signature;
-}
+
 
 - (NSString*) signHeader:(NSString*) pTextString withPrivateKey: (NSString*) pPrivateKey {
     
