@@ -22,8 +22,9 @@ import java.util.Enumeration;
 
 public class PNSignature {
 
-	public static final String KEYPROVIDER 						= 	"RSA";
-	public static final String KEYALGO 							= 	"SHA256withRSA";
+    protected static final char SPLIT = '#';
+    public static final String KEYPROVIDER = "RSA";
+    public static final String KEYALGO = "SHA256withRSA";
 
     /**
      *
@@ -40,19 +41,11 @@ public class PNSignature {
         PublicKey pub = null;
         String publickey_string = null;
         try {
-            kpg = KeyPairGenerator.getInstance(KEYPROVIDER, "AndroidKeyStore");
-            random = new SecureRandom();
-            kpg.initialize(new KeyGenParameterSpec.Builder(
-                                                           alias,
-                                                           KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
-                           .setDigests(KeyProperties.DIGEST_SHA256,
-                                       KeyProperties.DIGEST_SHA512)
-                           .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
-                           .build());
+      
+            int version = Build.VERSION.SDK_INT;
             
-            KeyPair kp = kpg.generateKeyPair();
-            pub = kp.getPublic();
-            publickey_string=savePublicKey(pub);
+            pub = storeKeysIntoVault(version, kpg, alias, context);
+           publickey_string = savePublicKey(pub,true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,7 +53,69 @@ public class PNSignature {
     }
     
     
-    //-------------------------------------------------------------------------
+    /**
+     *
+     * @param version
+     * @param pkpg
+     * @param alias
+     * @param context
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    public PublicKey storeKeysIntoVault(int version, KeyPairGenerator pkpg, String alias, Context context) {
+        try {
+            PublicKey pub = null;
+            PrivateKey priv = null;
+            if (version >= 23) {
+                pkpg = KeyPairGenerator.getInstance(KEYPROVIDER, "AndroidKeyStore");
+                pkpg.initialize(new KeyGenParameterSpec.Builder(
+                                                                alias,
+                                                                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
+                                .setDigests(KeyProperties.DIGEST_SHA256,
+                                            KeyProperties.DIGEST_SHA512)
+                                .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
+                                .build());
+                KeyPair kp = pkpg.generateKeyPair();
+                pub = kp.getPublic();
+                priv = kp.getPrivate();
+                return pub;
+            } else {
+                Calendar start = Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
+                end.add(Calendar.YEAR, 1);
+                // pkpg = KeyPairGenerator.getInstance(KEYPROVIDER);
+                /* pkpg.initialize(1024);*/
+                
+                
+                pkpg = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+                
+                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+                .setAlias(alias)
+                .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
+                .setSerialNumber(BigInteger.ONE)
+                .setStartDate(start.getTime())
+                .setEndDate(end.getTime())
+                .build();
+                
+                pkpg.initialize(spec);
+                KeyPair kp = pkpg.generateKeyPair();
+                pub = kp.getPublic();
+                priv = kp.getPrivate();
+                String privatekey_string = savePrivateKey(priv);
+                /* SharedPreferences.Editor editor = context.getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE).edit();
+                 editor.putString(alias, privatekey_string);
+                 editor.apply();*/
+                return pub;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+
+    
+    //---------------------------------------------------------------------------
     
     /**
      *
@@ -148,37 +203,29 @@ public class PNSignature {
         }
         return false;
     }
+
     //......................................................................................
-    
-    
+
     /**
-     * @param stored
-     * @return
-     * @throws GeneralSecurityException
-     */
-    public static PublicKey loadPublicKey(String stored) throws GeneralSecurityException {
-        byte[] data = Base64.decode(stored, Base64.DEFAULT);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
-        KeyFactory fact = KeyFactory.getInstance(KEYPROVIDER);
-        return fact.generatePublic(spec);
-    }
-    
-    
-    /**
-     * @param publ
+     * @param key
      * @return
      */
-    public static String savePublicKey(PublicKey publ) {
-        X509EncodedKeySpec spec = null;
+    public static String savePublicKey(PublicKey key, boolean test) {
+        RSAPublicKeySpec spec = null;
+        byte[] data = null;
+        StringBuilder buf = null;
         try {
-            KeyFactory fact = KeyFactory.getInstance(KEYPROVIDER);
-            spec = fact.getKeySpec(publ,
-                                   X509EncodedKeySpec.class);
-            
+            Log.d("Original Pub","="+key);
+            KeyFactory kf = KeyFactory.getInstance(KEYPROVIDER);
+            spec = kf.getKeySpec(key, RSAPublicKeySpec.class);
+            buf = new StringBuilder();
+            buf.append(spec.getModulus().toString(16))
+            .append("#")
+            .append(spec.getPublicExponent().toString(16));
+            Log.d("Original Pub","="+key);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Base64.encodeToString(spec.getEncoded(), Base64.DEFAULT);
+        return buf.toString();
     }
-
 }
