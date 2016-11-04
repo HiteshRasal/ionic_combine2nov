@@ -35,11 +35,9 @@
     CDVPluginResult* pluginResult = nil;
     
     NSMutableArray *value=[self generateKeysExample];
-    NSMutableDictionary *keyPair=[[NSMutableDictionary alloc]init];
-    [keyPair setValue:[value objectAtIndex:0] forKey:@"PublicKey"];
-    [keyPair setValue:[value objectAtIndex:1] forKey:@"PrivateKey"];
-    NSLog(@"dictionary is %@",keyPair);
-    pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:keyPair];
+    NSString *publicKey=[value objectAtIndex:0];
+    NSLog(@"publicKey is %@",publicKey);
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:publicKey];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
