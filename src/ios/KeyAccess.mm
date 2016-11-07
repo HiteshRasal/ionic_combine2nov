@@ -1,7 +1,6 @@
 /********* KeyAcess.m Cordova Plugin Implementation *******/
 #import "KeyAccess.h"
 #define SERVICE_NAME @"keyData"
-#define GROUP_NAME @"com.finoux.KeyAcess.com.apps.shared"
 
 #include <iomanip>
 #include "pem.h"
@@ -94,6 +93,19 @@
 }
 
 #pragma mark - generate public private key
+NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+-(NSString *) randomStringWithLength: (int) len {
+    
+    NSMutableString *randomString = [NSMutableString stringWithCapacity: len];
+    
+    for (int i=0; i<len; i++) {
+        [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random_uniform([letters length])]];
+    }
+    
+    return randomString;
+}
+
 - (NSMutableArray *)generateKeysExample
 {
     error = [[BDError alloc] init];
@@ -102,7 +114,7 @@
     
     RSACryptor = [[BDRSACryptor alloc] init];
     
-    RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:@"abcdefghijklmnopqrstuvwxyz123456789" error:error];
+    RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:[self randomStringWithLength:10] error:error];
     [keyArray addObject:RSAKeyPair.publicKey];
     NSLog(@"publicKey here11 %@",RSAKeyPair.publicKey);
     [keyArray addObject:RSAKeyPair.privateKey];
