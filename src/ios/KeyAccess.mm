@@ -17,7 +17,7 @@
 {
     keychain  =[[Keychain alloc] initWithService:SERVICE_NAME withGroup:nil];
     CDVPluginResult* pluginResult = nil;
-    NSString *keyForVal=@"VPKey";
+     NSString *keyForVal=@"VPKey";
     
     if (keyForVal != nil && [keyForVal length] > 0) {
         
