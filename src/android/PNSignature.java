@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 public class PNSignature {
-
+    
     protected static final char SPLIT = '#';
     public static final String KEYPROVIDER = "RSA";
     public static final String KEYALGO = "SHA256withRSA";
-
+    
     /**
      *
      * @param alias
@@ -41,11 +41,11 @@ public class PNSignature {
         PublicKey pub = null;
         String publickey_string = null;
         try {
-      
+            
             int version = Build.VERSION.SDK_INT;
             
             pub = storeKeysIntoVault(version, kpg, alias, context);
-           publickey_string = savePublicKey(pub,true);
+            publickey_string = savePublicKey(pub,true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,9 +83,6 @@ public class PNSignature {
                 Calendar start = Calendar.getInstance();
                 Calendar end = Calendar.getInstance();
                 end.add(Calendar.YEAR, 1);
-                // pkpg = KeyPairGenerator.getInstance(KEYPROVIDER);
-                /* pkpg.initialize(1024);*/
-                
                 
                 pkpg = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
                 
@@ -101,10 +98,7 @@ public class PNSignature {
                 KeyPair kp = pkpg.generateKeyPair();
                 pub = kp.getPublic();
                 priv = kp.getPrivate();
-                String privatekey_string = savePrivateKey(priv);
-                /* SharedPreferences.Editor editor = context.getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE).edit();
-                 editor.putString(alias, privatekey_string);
-                 editor.apply();*/
+                
                 return pub;
             }
         } catch (Exception e) {
@@ -113,7 +107,7 @@ public class PNSignature {
         
         return null;
     }
-
+    
     
     //---------------------------------------------------------------------------
     
@@ -203,9 +197,9 @@ public class PNSignature {
         }
         return false;
     }
-
+    
     //......................................................................................
-
+    
     /**
      * @param key
      * @return

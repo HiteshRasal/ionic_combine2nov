@@ -11,14 +11,14 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
+import android.content.Context;
 
 /**
  * This class echoes a string called from JavaScript.
  */
 public class KeyAccess extends CordovaPlugin {
-     String message;
-
+    String message;
+    
     @Override
     public boolean execute(String action, JSONArray args,CallbackContext callbackContext) throws JSONException {
         if (action.equals("getPublicKey")) {
@@ -26,9 +26,9 @@ public class KeyAccess extends CordovaPlugin {
             this.getPublicKey(message, callbackContext);
             return true;
         }
-        /*generateSig*/
+        
         else if (action.equals("geneSigning")) {
-            String value = args.getString(0);//uniquekey
+            String value = args.getString(0);
             try {
                 this.geneSigning(message,value, callbackContext);
             } catch (Exception e) {
@@ -49,12 +49,13 @@ public class KeyAccess extends CordovaPlugin {
     
     //Generate PublicKey Method
     
-    private void getPublicKey(String alias, final CallbackContext callbackContext) {
+    private void getPublicKey(String alias, final CallbackContext callbackContext){
         
         try {
-            
+            Context context=this.cordova.getActivity().getApplicationContext();
             PNSignature pnsig = new PNSignature();
-            String pub = pnsig.generateKeys(alias);
+            
+            String pub = pnsig.generateKeys(alias,context);
             
             boolean test=pnsig.check_alias(alias);
             
@@ -77,10 +78,10 @@ public class KeyAccess extends CordovaPlugin {
                              , String uiactualData
                              , CallbackContext callbackContext
                              ) {
-        
+        Context context=this.cordova.getActivity().getApplicationContext();
         PNSignature pnsig = new PNSignature();
         
-        byte[] realSig = pnsig.generateSignature(alias, uiactualData);
+        byte[] realSig = pnsig.generateSignature(alias, uiactualData,context);
         
         String newToken = Base64.encodeToString(realSig, Base64.DEFAULT);
         
@@ -92,9 +93,9 @@ public class KeyAccess extends CordovaPlugin {
     //Delete Method
     
     private void deleteMethod(String delete_key, CallbackContext callbackContext) {
-        
+        Context context=this.cordova.getActivity().getApplicationContext();
         PNSignature pnsig = new PNSignature();
-        boolean confirm_delete=pnsig.deleteKey(delete_key);
+        boolean confirm_delete=pnsig.deleteKey(delete_key,context);
         
         if(confirm_delete){
             callbackContext.success("delete success");
@@ -103,6 +104,6 @@ public class KeyAccess extends CordovaPlugin {
         }
         
     }
-
-
+    
+    
 }
