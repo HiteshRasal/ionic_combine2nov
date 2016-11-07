@@ -31,9 +31,9 @@ public class KeyAccess extends CordovaPlugin {
             this.getPublicKey(message, callbackContext);
             return true;
         }
-        
+        /*generateSig*/
         else if (action.equals("geneSigning")) {
-            String value = args.getString(0);
+            String value = args.getString(0);//uniquekey
             try {
                 this.geneSigning(message,value, callbackContext);
             } catch (Exception e) {
@@ -54,24 +54,25 @@ public class KeyAccess extends CordovaPlugin {
     
     //Generate PublicKey Method
     
-    private void getPublicKey(String alias, final CallbackContext callbackContext){
+    private void getPublicKey(String alias, final CallbackContext callbackContext) {
         
         try {
-            Context context=this.cordova.getActivity().getApplicationContext();
+            Context context = this.cordova.getActivity().getApplicationContext();
             PNSignature pnsig = new PNSignature();
             
-            String pub = pnsig.generateKeys(alias,context);
+            String pub = pnsig.generateKeys(alias, context);
             
-            boolean test=pnsig.check_alias(alias);
+            boolean test = pnsig.check_alias(alias);
             
-            if(test){
-                Log.d("Test","= "+test);
-            }else{
-                Log.d("failed","");
+            if (test) {
+                callbackContext.success(pub);
+            } else {
+                String fail="Failed to Generate Keys";
+                callbackContext.success(fail);
             }
-            callbackContext.success(pub);
             
-        }catch (Exception e){
+            
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -83,32 +84,34 @@ public class KeyAccess extends CordovaPlugin {
                              , String uiactualData
                              , CallbackContext callbackContext
                              ) {
-        Context context=this.cordova.getActivity().getApplicationContext();
+        Context context = this.cordova.getActivity().getApplicationContext();
         PNSignature pnsig = new PNSignature();
+        if (pnsig.check_alias(alias)) {
+            byte[] realSig = pnsig.generateSignature(alias, uiactualData, context);
+            
+            String newToken = Base64.encodeToString(realSig, Base64.DEFAULT);
+            callbackContext.success(newToken);
+            
+        } else {
+            String newToken = "Private Key was not generated";
+            callbackContext.success(newToken);
+        }
         
-        byte[] realSig = pnsig.generateSignature(alias, uiactualData,context);
-        
-        String newToken = Base64.encodeToString(realSig, Base64.DEFAULT);
-        
-        
-        callbackContext.success(newToken);
         
     }
-    
     //Delete Method
     
     private void deleteMethod(String delete_key, CallbackContext callbackContext) {
-        Context context=this.cordova.getActivity().getApplicationContext();
+        Context context = this.cordova.getActivity().getApplicationContext();
         PNSignature pnsig = new PNSignature();
-        boolean confirm_delete=pnsig.deleteKey(delete_key,context);
+        boolean confirm_delete = pnsig.deleteKey(delete_key, context);
         
-        if(confirm_delete){
-            callbackContext.success("delete success");
-        }else{
-            callbackContext.success("delete fail");
+        if (confirm_delete) {
+            callbackContext.success("Successfully key deleted");
+        } else {
+            callbackContext.success("Fail to delete key");
         }
         
     }
-    
     
 }

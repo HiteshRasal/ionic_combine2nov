@@ -147,8 +147,6 @@ public class PNSignature {
         }
         return false;
     }
-    
-    
     //......................................................................................
     
     public byte[] generateSignature(String alias, String uniqueKey, Context context) {
@@ -163,16 +161,13 @@ public class PNSignature {
             ks = KeyStore.getInstance("AndroidKeyStore");
             ks.load(null);
             
-            if (check_alias(alias)) {
-                privateKey = (PrivateKey) ks.getKey(alias, null);
-                s = Signature.getInstance(KEYALGO);
-                s.initSign(privateKey);
-                s.update(uniqueKey.getBytes("UTF-8"));
-                signature = s.sign();
-                return signature;
-            } else {
-                return null;
-            }
+            privateKey = (PrivateKey) ks.getKey(alias, null);
+            s = Signature.getInstance(KEYALGO);
+            s.initSign(privateKey);
+            s.update(uniqueKey.getBytes("UTF-8"));
+            signature = s.sign();
+            return signature;
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

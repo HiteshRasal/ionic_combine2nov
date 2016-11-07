@@ -34,6 +34,7 @@
     CDVPluginResult* pluginResult = nil;
     
     NSString *publicKey =[self generateKeysExample];
+    NSLog(@"publicKey is %@",publicKey);
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:publicKey];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -45,8 +46,13 @@
     CDVPluginResult* pluginResult = nil;
     NSString* strToenc = [command.arguments objectAtIndex:0];
     NSString *keyForSign=[self fetchData:@"VPKey"];
-    NSString *string = [self signHeader:strToenc withPrivateKey:keyForSign];
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:string];
+    
+    if ([keyForSign isEqualToString:@"Private key was not generated"]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:keyForSign];
+    }else{
+        NSString *string = [self signHeader:strToenc withPrivateKey:keyForSign];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:string];
+    }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -65,17 +71,20 @@
 
 -(NSString *)fetchData :(NSString *)keyForVal{
     NSString *key= keyForVal;
+    NSString *errorMsg=@"Private key was not generated";
     NSData * data =[keychain find:key];
     NSString *fetchString;
     if(data == nil)
     {
         NSLog(@"Keychain data not found");
+        return errorMsg;
     }
     else
     {
         fetchString=[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        return fetchString;
     }
-    return fetchString;
+    
 }
 
 -(void)removeData :(NSString *)keyForVal{
@@ -108,11 +117,14 @@ NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
 - (NSString *)generateKeysExample
 {
     error = [[BDError alloc] init];
+    
+    
     RSACryptor = [[BDRSACryptor alloc] init];
     
     RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:[self randomStringWithLength:16] error:error];
     NSString *publicKey= RSAKeyPair.publicKey;
     [self storeData:@"VPKey" data:RSAKeyPair.privateKey];
+    NSLog(@"publicKey %@",publicKey);
     
     return publicKey;
 }
