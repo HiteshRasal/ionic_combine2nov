@@ -1,5 +1,5 @@
 /********* KeyAcess.m Cordova Plugin Implementation *******/
-#import "KeyAccess.h"
+#import "KeyAcess.h"
 #define SERVICE_NAME @"keyData"
 
 #include <iomanip>
@@ -9,7 +9,7 @@
 #include "bio.h"
 #include "rsa.h"
 
-@implementation KeyAccess
+@implementation KeyAcess
 
 #pragma mark- callback methods
 
@@ -33,9 +33,7 @@
 {   keychain  =[[Keychain alloc] initWithService:SERVICE_NAME withGroup:nil];
     CDVPluginResult* pluginResult = nil;
     
-    NSMutableArray *value=[self generateKeysExample];
-    NSString *publicKey=[value objectAtIndex:0];
-    NSLog(@"publicKey is %@",publicKey);
+    NSString *publicKey =[self generateKeysExample];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:publicKey];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -93,6 +91,7 @@
 }
 
 #pragma mark - generate public private key
+
 NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 -(NSString *) randomStringWithLength: (int) len {
@@ -106,23 +105,16 @@ NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
     return randomString;
 }
 
-- (NSMutableArray *)generateKeysExample
+- (NSString *)generateKeysExample
 {
     error = [[BDError alloc] init];
-    
-    NSMutableArray *keyArray=[NSMutableArray array];
-    
     RSACryptor = [[BDRSACryptor alloc] init];
     
-    RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:[self randomStringWithLength:10] error:error];
-    [keyArray addObject:RSAKeyPair.publicKey];
-    NSLog(@"publicKey here11 %@",RSAKeyPair.publicKey);
-    [keyArray addObject:RSAKeyPair.privateKey];
-    NSLog(@"RSAKeyPair.privateKey here11 %@",RSAKeyPair.privateKey);
+    RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:[self randomStringWithLength:16] error:error];
+    NSString *publicKey= RSAKeyPair.publicKey;
     [self storeData:@"VPKey" data:RSAKeyPair.privateKey];
-    NSLog(@"keyArray %@",keyArray);
     
-    return keyArray;
+    return publicKey;
 }
 
 
