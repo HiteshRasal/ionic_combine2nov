@@ -20,8 +20,9 @@
     NSString *keyForVal=@"VPKey";
     
     if (keyForVal != nil && [keyForVal length] > 0) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:keyForVal];
-        [self removeData:keyForVal];
+        
+        NSString *msg=[self removeData:keyForVal];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:msg];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
     }
@@ -57,16 +58,19 @@
 }
 
 #pragma mark - keyChain methods
--(void)storeData:(NSString *)keyForVal data:(NSString *)storeVal{
+-(NSString *)storeData:(NSString *)keyForVal data:(NSString *)storeVal{
     NSString *key =keyForVal;
+    NSString *errorMsg=@"Failed to Generate Keys";
+    NSString *successMsg=@"Successfully store key";
     NSData * value = [storeVal dataUsingEncoding:NSUTF8StringEncoding];
     
     if([keychain insert:key :value])
     {
-        NSLog(@"Successfully added data");
+        return successMsg;
     }
-    else
-        NSLog(@"Failed to  add data");
+    else{
+        return  errorMsg;
+    }
 }
 
 -(NSString *)fetchData :(NSString *)keyForVal{
@@ -76,7 +80,6 @@
     NSString *fetchString;
     if(data == nil)
     {
-        NSLog(@"Keychain data not found");
         return errorMsg;
     }
     else
@@ -87,15 +90,17 @@
     
 }
 
--(void)removeData :(NSString *)keyForVal{
+-(NSString *)removeData :(NSString *)keyForVal{
     NSString *key =keyForVal;
+    NSString *success= @"Successfully key deleted";
+    NSString *errorMsg= @"Fail to delete key";
     if([keychain remove:key])
     {
-        NSLog(@"Successfully removed data");
+        return success;
     }
     else
     {
-        NSLog(@"Unable to remove data");
+        return errorMsg;
     }
 }
 
@@ -123,10 +128,13 @@ NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
     
     RSAKeyPair = [RSACryptor generateKeyPairWithKeyIdentifier:@"keyChain.com.da" randomKey:[self randomStringWithLength:16] error:error];
     NSString *publicKey= RSAKeyPair.publicKey;
-    [self storeData:@"VPKey" data:RSAKeyPair.privateKey];
-    NSLog(@"publicKey %@",publicKey);
-    
-    return publicKey;
+    NSString *msg=[self storeData:@"VPKey" data:RSAKeyPair.privateKey];
+    if ([msg isEqualToString:@"Failed to Generate Keys"]) {
+        return msg;
+    }else{
+        
+        return publicKey;
+    }
 }
 
 
