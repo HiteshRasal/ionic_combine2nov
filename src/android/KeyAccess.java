@@ -22,12 +22,11 @@ import java.security.spec.InvalidKeySpecException;
  * This class echoes a string called from JavaScript.
  */
 public class KeyAccess extends CordovaPlugin {
-    String message;
+    private static final String message = "VPKey";
     
     @Override
     public boolean execute(String action, JSONArray args,CallbackContext callbackContext) throws JSONException {
         if (action.equals("getPublicKey")) {
-            message ="VPKey";
             this.getPublicKey(message, callbackContext);
             return true;
         }
@@ -35,7 +34,7 @@ public class KeyAccess extends CordovaPlugin {
         else if (action.equals("geneSigning")) {
             String value = args.getString(0);//uniquekey
             try {
-                this.geneSigning(message,value, callbackContext);
+                this.geneSigning(message, value, callbackContext);
             } catch (Exception e) {
                 e.printStackTrace();
             }
