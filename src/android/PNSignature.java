@@ -38,6 +38,10 @@ import java.util.Enumeration;
 import javax.crypto.Cipher;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.util.io.pem.PemObject;
+import java.io.StringWriter;
+import java.io.IOException;
 
 public class PNSignature {
     /** Our split character. */
@@ -49,25 +53,14 @@ public class PNSignature {
     
     @TargetApi(Build.VERSION_CODES.M)
     public String generateKeys(String alias, Context context) {
-        
-        KeyPairGenerator kpg = null;
-        SecureRandom random = null;
-        ArrayList myKeys = null;
-        PublicKey pub = null;
-        PrivateKey priv = null;
-        String publickey_string = null;
-        try {
-            
-            int version = Build.VERSION.SDK_INT;
-            
-            pub = storeKeysIntoVault(version, kpg, alias, context);
-            publickey_string = savePublicKey(pub,true);
-            
-            
+        try {    
+            PublicKey pub = storeKeysIntoVault(alias, context);
+            return toPEMString(pub);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return publickey_string;
+
+        return null;
     }
     
     /**
@@ -79,12 +72,14 @@ public class PNSignature {
      * @return
      */
     @TargetApi(Build.VERSION_CODES.M)
-    public PublicKey storeKeysIntoVault(int version, KeyPairGenerator pkpg, String alias, Context context) {
+    public PublicKey storeKeysIntoVault(String alias, Context context) {
+        int version = Build.VERSION.SDK_INT;
+
         try {
             PublicKey pub = null;
             PrivateKey priv = null;
             if (version >= 23) {
-                pkpg = KeyPairGenerator.getInstance(KEYPROVIDER, "AndroidKeyStore");
+                KeyPairGenerator pkpg = KeyPairGenerator.getInstance(KEYPROVIDER, "AndroidKeyStore");
                 pkpg.initialize(new KeyGenParameterSpec.Builder(
                                                                 alias,
                                                                 KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
@@ -101,7 +96,7 @@ public class PNSignature {
                 Calendar end = Calendar.getInstance();
                 end.add(Calendar.YEAR, 1);
                 
-                pkpg = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+                KeyPairGenerator pkpg = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
                 
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                 .setAlias(alias)
@@ -205,23 +200,12 @@ public class PNSignature {
      * @param key
      * @return
      */
-    public static String savePublicKey(PublicKey key, boolean test) {
-        RSAPublicKeySpec spec = null;
-        byte[] data = null;
-        StringBuilder buf = null;
-        try {
-            Log.d("Original Pub","="+key);
-            KeyFactory kf = KeyFactory.getInstance(KEYPROVIDER);
-            spec = kf.getKeySpec(key, RSAPublicKeySpec.class);
-            buf = new StringBuilder();
-            buf.append(spec.getModulus().toString(16))
-            .append("#")
-            .append(spec.getPublicExponent().toString(16));
-            Log.d("Original Pub","="+key);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return buf.toString();
+    public static String toPEMString(PublicKey publicKey) throws IOException {
+        StringWriter sw = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
+        pemWriter.writeObject(publicKey);
+        pemWriter.close();
+        return sw.toString();
     }
     
     

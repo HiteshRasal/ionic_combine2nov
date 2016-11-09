@@ -1,0 +1,22 @@
+android {
+	dexOptions {
+    	preDexLibraries = false
+	}
+
+	packagingOptions {
+		exclude 'META-INF/DEPENDENCIES'
+	    exclude 'META-INF/NOTICE'
+	    exclude 'META-INF/LICENSE'
+	    exclude 'META-INF/LICENSE.txt'
+	    exclude 'META-INF/NOTICE.txt'
+	    exclude 'META-INF/BCKEY.DSA'
+	    exclude 'META-INF/BCKEY.SF'
+	    exclude 'AUTHORS'
+	}
+}
+
+dependencies {
+	compile (
+		"org.bouncycastle:bcpkix-jdk15on:1.55"
+	)
+}
