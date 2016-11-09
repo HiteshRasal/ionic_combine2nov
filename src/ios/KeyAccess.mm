@@ -1,5 +1,5 @@
 /********* KeyAcess.m Cordova Plugin Implementation *******/
-#import "KeyAcess.h"
+#import "KeyAccess.h"
 #define SERVICE_NAME @"keyData"
 
 #include <iomanip>
@@ -9,7 +9,7 @@
 #include "bio.h"
 #include "rsa.h"
 
-@implementation KeyAcess
+@implementation KeyAccess
 
 #pragma mark- callback methods
 
